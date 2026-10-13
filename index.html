@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Happy Birthday, Em</title>
+<title>MalouPET</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖤</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,17 +33,13 @@ body.s-photos #stage,body.s-letter #stage{opacity:.09}
 .open .petal:not(.late),.open2 .petal.late{transform:none}
 .vein{fill:none;stroke:var(--bg);stroke-width:.8;opacity:.5;vector-effect:non-scaling-stroke}
 .petal .c{stroke:var(--bg);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.petal .e{stroke:var(--bg);stroke-width:.9;vector-effect:non-scaling-stroke}
 .core{transform-box:fill-box;transform-origin:center;transform:scale(.2);transition:transform 1.6s var(--d,0s) ease-out}
 .open .core:not(.late),.open2 .core.late{transform:none}
 
 .plant{transform-box:view-box;transform-origin:var(--ox) 472px}
 .open .plant{animation:sway 7s var(--sw,0s) ease-in-out infinite}
 @keyframes sway{0%,100%{transform:rotate(-1.1deg)}50%{transform:rotate(1.3deg)}}
-
-.blade-g{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);animation:pop 1.2s var(--g,1s) ease-out forwards}
-.blade{fill:none;stroke:var(--fg);stroke-width:1.3;stroke-linecap:round;transform-box:fill-box;transform-origin:50% 100%}
-.open .blade{animation:wave 4s var(--w,0s) ease-in-out infinite alternate}
-@keyframes wave{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
 
 .ring{fill:none;stroke:var(--fg);stroke-width:.8;opacity:0;transform-box:fill-box;transform-origin:center}
 .open .ring{animation:ring 7s var(--rd,0s) ease-out infinite}
@@ -177,7 +173,7 @@ body:not(.s-pre) #mute{display:block}
 
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important;transition-delay:0s!important}
-  .stem{stroke-dashoffset:0}.leaf,.blade-g{transform:none}#openBtn{opacity:1}
+  .stem{stroke-dashoffset:0}.leaf{transform:none}#openBtn{opacity:1}
 }
 </style>
 </head>
@@ -225,6 +221,7 @@ const LETTER = [
 ];
 const HER = "Em";                  // the cats use this name when they talk to her
 const MAX_PHOTOS = 40;              // photos are 1.jpeg, 2.jpeg, 3.jpeg ... it stops at the first missing one
+const LETTER_AT = 60;               // seconds after the tap when the letter shows up
 /* ============================================= */
 
 const $ = id => document.getElementById(id);
@@ -244,23 +241,25 @@ function el(tag, attrs = {}, parent){
 const PETAL = "M0 0 C -21 -18 -25 -52 0 -86 C 25 -52 21 -18 0 0Z";
 const LEAF  = "M0 0 C 16 -14 34 -42 0 -80 C -34 -42 -16 -14 0 0Z";
 
-// A bloom: three layers of pointed petals + a stamen crown. `late` blooms stay buds until the finale.
+// A bloom: five layers of pointed petals (53 in all) + a stamen crown. `late` blooms stay buds until the finale.
 function bloom(parent, x, y, s, base, late){
   const L_ = late ? " late" : "";
   const g = el("g", { transform: `translate(${x} ${y}) scale(${s})` }, parent);
-  [{ n: 12, len: 1, rot: 0, fill: "url(#pA)", cls: "" },
-   { n: 9, len: .76, rot: 20, fill: "url(#pB)", cls: "" },
-   { n: 7, len: .52, rot: 8, fill: "url(#pC)", cls: "c" }].forEach((L, li) => {
+  [{ n: 16, len: 1,   rot: 0,    fill: "url(#pA)", cls: "" },
+   { n: 13, len: .86, rot: 11,   fill: "url(#pB)", cls: "e" },
+   { n: 10, len: .68, rot: 5,    fill: "url(#pA)", cls: "e" },
+   { n: 8,  len: .5,  rot: 17,   fill: "url(#pC)", cls: "c" },
+   { n: 6,  len: .32, rot: 0,    fill: "url(#pB)", cls: "c" }].forEach((L, li) => {
     for (let i = 0; i < L.n; i++){
       const pg = el("g", { transform: `rotate(${i * 360 / L.n + L.rot}) scale(${L.len})` }, g);
       const p = el("g", { class: "petal" + L_ }, pg);
-      p.style.setProperty("--d", (base + li * .55 + i * .09) + "s");
+      p.style.setProperty("--d", (base + li * .45 + i * .07) + "s");
       el("path", { d: PETAL, fill: L.fill, class: L.cls }, p);
       el("path", { d: "M0 -8 C 1.5 -34 1.5 -56 0 -72", class: "vein" }, p);
     }
   });
   const core = el("g", { class: "core" + L_ }, g);
-  core.style.setProperty("--d", (base + 2.1) + "s");
+  core.style.setProperty("--d", (base + 2.6) + "s");
   el("circle", { r: 11, fill: "var(--fg)" }, core);
   for (let i = 0; i < 20; i++){
     const a = (i * 18 + (i % 2) * 6) * Math.PI / 180, r2 = 15 + (i % 3) * 5;
@@ -309,35 +308,43 @@ const back = $("back"), front = $("front");
 // ripples that pulse out from the main bloom
 [0, 2.3, 4.6].forEach(d => { const c = el("circle", { cx: 200, cy: 190, r: 150, class: "ring" }, back); c.style.setProperty("--rd", d + "s"); });
 
-// grass
-for (let i = 0; i < 40; i++){
-  const x = 8 + i * 9.8 + Math.random() * 4, h = 14 + Math.random() * 26, dx = (Math.random() - .5) * 12;
-  const g = el("g", { class: "blade-g" }, back); g.style.setProperty("--g", (.4 + Math.random() * 2.4) + "s");
-  const p = el("path", { d: `M${x} 474 Q ${x + dx / 2} ${474 - h * .6} ${x + dx} ${474 - h}`, class: "blade" }, g);
-  p.style.setProperty("--w", (-Math.random() * 4) + "s");
-}
-
 // far low plants (buds until the finale)
-plant(front, { ox: 180, sway: -1, sd: 1.7, stem: "M180 472 C 120 476, 64 462, 36 424", bloom: [34, 420, .24, .2, true],
+plant(front, { ox: 180, sway: -1, sd: 1.7, stem: "M180 472 C 120 476, 64 462, 36 424", bloom: [34, 420, .26, .2, true],
+  branches: [{ d: "M104 468 C 84 462, 62 452, 52 436", sd: 2.4, bloom: [52, 432, .18, .4, true], leaves: [] }],
   leaves: [[110, 468, -80, .4, 3]] });
-plant(front, { ox: 220, sway: -3, sd: 2, stem: "M220 472 C 284 476, 338 464, 366 430", bloom: [366, 426, .24, .4, true],
+plant(front, { ox: 220, sway: -3, sd: 2, stem: "M220 472 C 284 476, 338 464, 366 430", bloom: [366, 426, .26, .4, true],
+  branches: [{ d: "M296 470 C 318 464, 340 454, 350 440", sd: 2.6, bloom: [350, 436, .18, .6, true], leaves: [] }],
   leaves: [[290, 470, 80, .4, 3.1]] });
 
-// left + right plants
-plant(front, { ox: 190, sway: -2, sd: .9, stem: "M190 472 C 140 452, 80 398, 70 300", bloom: [70, 296, .62, .8],
-  branches: [{ d: "M122 430 C 92 420, 54 398, 44 356", sd: 2, bloom: [44, 352, .3, .3, true], leaves: [[96, 424, -70, .4, 3.2]] }],
-  leaves: [[150, 450, -72, .6, 2.3], [100, 372, 68, .5, 2.6]], tendrils: [[140, 441, -1, .8, 3]] });
-plant(front, { ox: 210, sway: -4, sd: 1.2, stem: "M210 472 C 262 458, 330 392, 332 292", bloom: [332, 288, .66, 1.1],
-  branches: [{ d: "M288 436 C 322 430, 354 412, 362 380", sd: 2.4, bloom: [362, 376, .28, .5, true], leaves: [[318, 428, 72, .4, 3.4]] }],
-  leaves: [[262, 448, 74, .6, 2.5], [326, 340, -64, .5, 2.8]], tendrils: [[272, 440, 1, .8, 3.2]] });
-
-// main plant: tall stem, four side branches, tendrils
-plant(front, { ox: 200, sway: 0, sd: .2, stem: "M200 472 C 192 380, 210 290, 200 192", bloom: [200, 188, 1.2, 0],
+// left plant: three side branches
+plant(front, { ox: 190, sway: -2, sd: .9, stem: "M190 472 C 140 452, 80 398, 70 300", bloom: [70, 296, .64, .8],
   branches: [
-    { d: "M197 412 C 160 394, 122 360, 110 308", sd: .8, bloom: [110, 304, .5, 1.0], leaves: [[150, 392, -66, .5, 2.4]] },
-    { d: "M203 362 C 242 346, 278 314, 288 268", sd: 1.1, bloom: [288, 264, .46, 1.3], leaves: [[250, 340, 66, .45, 2.7]] },
-    { d: "M199 306 C 172 290, 148 268, 142 238", sd: 1.4, bloom: [142, 234, .3, .3, true], leaves: [[170, 288, -60, .38, 3]] },
-    { d: "M201 272 C 228 260, 250 240, 256 214", sd: 1.6, bloom: [256, 210, .26, .5, true], leaves: [] }
+    { d: "M122 430 C 92 420, 54 398, 44 356", sd: 2, bloom: [44, 352, .32, .3, true], leaves: [[96, 424, -70, .4, 3.2]] },
+    { d: "M73 340 C 96 326, 110 306, 112 282", sd: 2.3, bloom: [112, 278, .32, .9, true], leaves: [[92, 322, 60, .38, 3.4]] },
+    { d: "M96 408 C 74 400, 46 388, 30 362", sd: 2.5, bloom: [30, 358, .22, .7, true], leaves: [] }
+  ],
+  leaves: [[150, 450, -72, .6, 2.3], [100, 372, 68, .5, 2.6], [76, 320, -60, .42, 2.9]], tendrils: [[140, 441, -1, .8, 3], [84, 360, 1, .7, 3.3]] });
+
+// right plant: three side branches
+plant(front, { ox: 210, sway: -4, sd: 1.2, stem: "M210 472 C 262 458, 330 392, 332 292", bloom: [332, 288, .68, 1.1],
+  branches: [
+    { d: "M288 436 C 322 430, 354 412, 362 380", sd: 2.4, bloom: [362, 376, .3, .5, true], leaves: [[318, 428, 72, .4, 3.4]] },
+    { d: "M328 340 C 306 326, 292 306, 290 282", sd: 2.6, bloom: [290, 278, .32, 1.2, true], leaves: [[308, 322, -60, .38, 3.6]] },
+    { d: "M304 410 C 326 400, 350 388, 366 360", sd: 2.8, bloom: [366, 356, .22, .8, true], leaves: [] }
+  ],
+  leaves: [[262, 448, 74, .6, 2.5], [326, 340, -64, .5, 2.8], [334, 318, 62, .42, 3]], tendrils: [[272, 440, 1, .8, 3.2], [322, 360, -1, .7, 3.5]] });
+
+// main plant: tall stem, eight side branches, tendrils
+plant(front, { ox: 200, sway: 0, sd: .2, stem: "M200 472 C 192 380, 210 290, 200 192", bloom: [200, 188, 1.22, 0],
+  branches: [
+    { d: "M197 428 C 158 412, 118 378, 104 326", sd: .8, bloom: [104, 322, .52, 1.0], leaves: [[150, 408, -66, .5, 2.4]] },
+    { d: "M203 400 C 244 384, 284 350, 296 298", sd: 1.1, bloom: [296, 294, .5, 1.3], leaves: [[250, 378, 66, .45, 2.7]] },
+    { d: "M199 352 C 168 338, 140 312, 130 276", sd: 1.4, bloom: [130, 272, .38, .6, true], leaves: [[160, 334, -60, .4, 3]] },
+    { d: "M202 330 C 236 316, 262 292, 270 258", sd: 1.6, bloom: [270, 254, .36, .8, true], leaves: [[240, 312, 60, .38, 3.1]] },
+    { d: "M199 300 C 176 286, 158 266, 154 238", sd: 1.8, bloom: [154, 234, .3, .4, true], leaves: [] },
+    { d: "M201 270 C 224 258, 242 240, 246 216", sd: 2, bloom: [246, 212, .28, .6, true], leaves: [] },
+    { d: "M196 452 C 170 448, 148 438, 136 422", sd: 1.3, bloom: [136, 418, .32, 1.2], leaves: [[156, 446, -70, .35, 2.9]] },
+    { d: "M204 448 C 232 442, 254 430, 264 412", sd: 1.5, bloom: [264, 408, .32, 1.5], leaves: [[244, 440, 70, .35, 3]] }
   ],
   leaves: [[199, 452, -60, .95, 1.6], [201, 420, 58, .9, 1.8], [199, 388, -54, .8, 2.0], [201, 345, 52, .7, 2.2], [200, 322, -46, .6, 2.4], [201, 292, 44, .5, 2.6]],
   tendrils: [[197, 430, -1, 1, 2.8], [203, 400, 1, .9, 3], [201, 330, -1, .8, 3.2], [200, 252, 1, .7, 3.4]] });
@@ -744,14 +751,15 @@ function startCats(){
   })();
 }
 
-/* ---------- the timeline: hands-free, paced to the length of the song ---------- */
+/* ---------- the timeline: hands-free ---------- */
 function scene(n){
   ["pre", "intro", "photos", "letter", "finale"].forEach(s => body.classList.remove("s-" + s));
   body.classList.add("s-" + n);
 }
 
 async function run(){
-  const T = (isFinite(song.duration) && song.duration > 30) ? song.duration : 180;
+  const t0 = performance.now();
+  const elapsed = () => (performance.now() - t0) / 1000;
 
   // 1. the garden blooms
   scene("intro"); garden.classList.add("open"); petalRain(12);
@@ -761,13 +769,19 @@ async function run(){
   await sleep(16000);
   body.classList.remove("hero-on");
 
-  // 2. photos: each one holds long enough that a few photos still fill the time; the set repeats until it's time for the letter
+  // 2. photos, from 16s until the letter is due
   const n = photos.length;
   if (n){
     scene("photos");
-    const per = clamp((T - 75) / n, 6, 13);
-    let t = 16, i = 0;
-    do { showPhoto(photos[i % n], per); await sleep(per * 1000); t += per; i++; } while (t < T - 60);
+    const per = clamp((LETTER_AT - 16) / n, 4, 13);
+    let i = 0;
+    while (elapsed() < LETTER_AT - 1){
+      showPhoto(photos[i % n], per);
+      await sleep(Math.min(per, LETTER_AT - elapsed()) * 1000);
+      i++;
+    }
+  } else {
+    await sleep(Math.max(0, LETTER_AT - elapsed()) * 1000);
   }
 
   // 3. the letter
