@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Happy Birthday, Em</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖤</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+<style>
+/* Black is her favourite colour. Swap --bg and --fg to flip the whole site. */
+:root{ --bg:#ffffff; --fg:#0b0b0b; --mute:#6b6b6b;
+  --serif:"Cormorant Garamond",Georgia,serif; --script:"Pinyon Script","Snell Roundhand",cursive }
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--fg)}
+body{font-family:var(--serif);font-size:1.25rem;line-height:1.6}
+
+/* ---------- garden ---------- */
+#stage{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;
+  padding:calc(env(safe-area-inset-top,0px) + .5rem) 1rem calc(env(safe-area-inset-bottom,0px) + .5rem);transition:opacity 2.5s}
+body.s-photos #stage,body.s-letter #stage{opacity:.09}
+#garden{width:min(96vw,440px);max-height:66svh;height:auto;overflow:visible}
+
+.stem{fill:none;stroke:var(--fg);stroke-width:3.2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 2.4s var(--sd,0s) ease-out forwards}
+.stem.thin{stroke-width:2.2}.stem.tend{stroke-width:1.3}
+@keyframes draw{to{stroke-dashoffset:0}}
+.leaf{fill:url(#lg);transform-box:fill-box;transform-origin:50% 100%;transform:scale(0);animation:pop 1.1s var(--ld,2s) cubic-bezier(.2,.9,.3,1.2) forwards}
+.rib{fill:none;stroke:var(--bg);stroke-width:.9;opacity:.8}
+@keyframes pop{to{transform:scale(1)}}
+
+.petal{transform-box:fill-box;transform-origin:50% 100%;transform:rotate(-22deg) scale(.28);transition:transform 2.1s cubic-bezier(.2,.85,.25,1.08) var(--d,0s)}
+.open .petal:not(.late),.open2 .petal.late{transform:none}
+.vein{fill:none;stroke:var(--bg);stroke-width:.8;opacity:.5;vector-effect:non-scaling-stroke}
+.petal .c{stroke:var(--bg);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.core{transform-box:fill-box;transform-origin:center;transform:scale(.2);transition:transform 1.6s var(--d,0s) ease-out}
+.open .core:not(.late),.open2 .core.late{transform:none}
+
+.plant{transform-box:view-box;transform-origin:var(--ox) 472px}
+.open .plant{animation:sway 7s var(--sw,0s) ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.1deg)}50%{transform:rotate(1.3deg)}}
+
+.blade-g{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);animation:pop 1.2s var(--g,1s) ease-out forwards}
+.blade{fill:none;stroke:var(--fg);stroke-width:1.3;stroke-linecap:round;transform-box:fill-box;transform-origin:50% 100%}
+.open .blade{animation:wave 4s var(--w,0s) ease-in-out infinite alternate}
+@keyframes wave{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+
+.ring{fill:none;stroke:var(--fg);stroke-width:.8;opacity:0;transform-box:fill-box;transform-origin:center}
+.open .ring{animation:ring 7s var(--rd,0s) ease-out infinite}
+@keyframes ring{0%{transform:scale(.25);opacity:.5}100%{transform:scale(1.2);opacity:0}}
+.spark{fill:var(--fg);opacity:0}
+.open .spark{animation:rise 10s var(--sk,0s) linear infinite}
+@keyframes rise{0%{transform:translate(0,0);opacity:0}15%{opacity:.7}100%{transform:translate(var(--dx,20px),-300px);opacity:0}}
+
+/* ---------- captions ---------- */
+#caption{position:relative;text-align:center;min-height:6.4rem;width:100%}
+#hero{font-family:var(--script);font-weight:400;font-size:clamp(3rem,13vw,5.2rem);line-height:1.1;opacity:0;transition:opacity 2s}
+#sub{color:var(--mute);font-style:italic;opacity:0;transition:opacity 2s .6s}
+body.hero-on #hero,body.hero-on #sub{opacity:1}
+body.s-photos #caption,body.s-letter #caption{opacity:0}
+#openBtn{position:absolute;left:50%;top:1rem;transform:translateX(-50%);font:inherit;font-size:1.25rem;color:var(--bg);background:var(--fg);
+  border:1px solid var(--fg);border-radius:999px;padding:.65rem 2.2rem;cursor:pointer;opacity:0;animation:fade 1s 3.2s forwards;transition:background .3s,color .3s}
+#openBtn:hover{background:var(--bg);color:var(--fg)}
+body:not(.s-pre) #openBtn{display:none}
+@keyframes fade{to{opacity:1}}
+#replay{position:fixed;z-index:5;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 1rem);font:inherit;font-size:1rem;
+  color:var(--mute);background:none;border:0;border-bottom:1px solid var(--mute);cursor:pointer;display:none}
+body.s-finale.late-on #replay{display:block}
+button:focus-visible{outline:3px solid var(--mute);outline-offset:3px}
+
+/* ---------- scenes ---------- */
+.layer{position:fixed;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity 1.8s}
+body.s-photos #photoLayer,body.s-letter #letterLayer{opacity:1}
+
+#frame{width:min(78vw,360px);aspect-ratio:4/5;max-height:72svh;background:var(--fg);padding:.65rem;box-shadow:0 22px 44px rgba(0,0,0,.2);transform:rotate(-1.5deg)}
+#inner{position:relative;width:100%;height:100%;overflow:hidden}
+#inner img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.8s;transform:scale(1)}
+#inner img.on{opacity:1;animation:kb var(--hold,12s) linear forwards}
+#inner img.out{transform:scale(1.09)}
+@keyframes kb{to{transform:scale(1.09)}}
+#frame::after{content:"";position:absolute;inset:0;pointer-events:none}
+
+#letter{width:100%;max-width:540px;max-height:88svh;overflow:auto;background:var(--bg);padding:1.4rem 1.8rem 1.6rem;border:1px solid var(--fg);
+  box-shadow:0 0 0 6px var(--bg),0 0 0 7px var(--fg),0 26px 50px rgba(0,0,0,.14)}
+.div{display:block;width:min(240px,70vw);height:auto;margin:0 auto .6rem;overflow:visible}
+.div line{stroke:var(--fg);stroke-width:1}
+#lt p{margin-bottom:1rem}
+#lt .big{font-family:var(--script);font-size:2.9rem;line-height:1.2}
+#lt .sig{font-style:italic;margin-top:1.4rem}
+.caret::after{content:"";display:inline-block;width:2px;height:1.1em;background:var(--fg);margin-left:2px;vertical-align:-.15em;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+#mute{position:fixed;z-index:5;right:max(1rem,env(safe-area-inset-right));top:calc(env(safe-area-inset-top,0px) + 1rem);width:2.8rem;height:2.8rem;border-radius:50%;
+  border:1px solid var(--fg);background:var(--fg);color:var(--bg);font-size:1.2rem;cursor:pointer;display:none}
+body:not(.s-pre) #mute{display:block}
+.petal-fall{position:fixed;top:-3rem;pointer-events:none;z-index:4;width:13px;height:18px;border-radius:70% 0 70% 0;background:var(--fg);opacity:.75;animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(540deg)}}
+
+/* ---------- cats ---------- */
+#cats{position:fixed;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+.cat{position:absolute;left:0;top:0;width:110px;transform-origin:0 0;opacity:0;transition:opacity .8s}
+.catA{--cf:var(--fg);--eye:var(--bg)}.catB{--cf:var(--bg);--eye:var(--fg)}
+.flip{transform:scaleX(var(--f,1))}
+.csvg{display:block;width:110px;height:auto;overflow:visible}
+.csvg .shade{fill:rgba(0,0,0,.12)}
+.csvg .fc{fill:var(--cf);stroke:var(--fg);stroke-width:2.5;stroke-linejoin:round}
+.csvg .patch{fill:var(--fg)}
+.csvg .eye{fill:var(--eye);transform-box:fill-box;transform-origin:center;animation:cblink 5s infinite}
+.catB .eye{animation-delay:-2s}
+.csvg .face{fill:none;stroke:var(--eye);stroke-width:1.3;stroke-linecap:round}
+.csvg .nose{fill:var(--eye)}
+.csvg .wh{stroke:var(--fg);stroke-width:1;fill:none}
+.csvg .tl{fill:none;stroke-linecap:round}.csvg .tl.o{stroke:var(--fg);stroke-width:11}.csvg .tl.i{stroke:var(--cf);stroke-width:6.5}
+.tailg{transform-box:fill-box;transform-origin:100% 100%;animation:wag 2.6s ease-in-out infinite alternate}
+.happy .tailg{animation-duration:.4s}
+.torso,.head,.leg{transform-box:fill-box}
+.torso{transform-origin:20% 90%}.head{transform-origin:50% 60%}.leg{transform-origin:50% 8%}
+.walk .leg{animation:swing .5s ease-in-out infinite alternate}.walk .leg.b{animation-direction:alternate-reverse}
+.run .leg{animation:swing .26s ease-in-out infinite alternate}.run .leg.b{animation-direction:alternate-reverse}
+.walk .torso{animation:bob .25s ease-in-out infinite alternate}.run .torso{animation:bob .13s ease-in-out infinite alternate}
+.sit .torso{transform:rotate(-16deg)}.sit .leg.bk{opacity:0}
+.lie .torso{transform-origin:50% 100%;transform:translateY(20px) scaleY(.78)}
+.lie .leg{opacity:0}.lie .head{transform:translate(-2px,8px) rotate(6deg)}
+.lie .eye{animation:none;transform:scaleY(.12)}
+.kiss .head{animation:lean .9s ease-in-out infinite alternate}
+.swat .leg.fn{animation:swat .36s ease-in-out infinite alternate}
+.swat .head{transform:rotate(-8deg)}.swat .torso{animation:lunge .36s ease-in-out infinite alternate}
+.tumble .hopper{animation:tumble .35s ease-in-out infinite alternate}
+.hop .hopper{animation:hop .5s ease-out 2}
+@keyframes wag{from{transform:rotate(-10deg)}to{transform:rotate(12deg)}}
+@keyframes cblink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes swing{from{transform:rotate(-26deg)}to{transform:rotate(26deg)}}
+@keyframes bob{to{transform:translateY(-2px)}}
+@keyframes lean{to{transform:translate(5px,3px) rotate(7deg)}}
+@keyframes swat{to{transform:rotate(-85deg)}}
+@keyframes lunge{to{transform:translateX(6px)}}
+@keyframes tumble{from{transform:rotate(-14deg) translateY(-3px)}to{transform:rotate(14deg) translateY(3px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-24px)}}
+.fx{position:fixed;z-index:6;pointer-events:none;font-size:1.3rem;line-height:1;animation:fxup 1.9s ease-out forwards}
+.fx.z{font-family:var(--serif);font-style:italic;font-size:1.1rem}.fx.sp{font-size:1.5rem}
+@keyframes fxup{0%{transform:translate(-50%,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(calc(-50% + var(--dx,0px)),-70px) scale(1.2);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  .stem{stroke-dashoffset:0}.leaf,.blade-g{transform:none}#openBtn{opacity:1}
+}
+</style>
+</head>
+<body class="s-pre">
+
+<button id="mute" aria-label="Mute music">♪</button>
+<button id="replay">Replay</button>
+
+<main>
+<section id="stage">
+  <svg id="garden" viewBox="0 0 400 480" role="img" aria-label="A garden of black flowers blooming">
+    <defs>
+      <linearGradient id="pA" x1="0" y1="1" x2="0" y2="0"><stop offset="0" style="stop-color:var(--fg)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.82"/></linearGradient>
+      <linearGradient id="pB" x1="0" y1="1" x2="0" y2="0"><stop offset="0" style="stop-color:var(--fg)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.58"/></linearGradient>
+      <linearGradient id="pC" x1="0" y1="1" x2="0" y2="0"><stop offset="0" style="stop-color:var(--fg)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.9"/></linearGradient>
+      <linearGradient id="lg" x1="0" y1="1" x2="0" y2="0"><stop offset="0" style="stop-color:var(--fg)"/><stop offset="1" style="stop-color:var(--fg);stop-opacity:.7"/></linearGradient>
+    </defs>
+    <g id="back"></g><g id="front"></g>
+  </svg>
+  <div id="caption">
+    <h1 id="hero">Happy Birthday, Em</h1>
+    <p id="sub">This one is for you.</p>
+    <button id="openBtn">Tap to open</button>
+  </div>
+</section>
+
+<section class="layer" id="photoLayer"><div id="frame"><div id="inner"></div></div></section>
+
+<section class="layer" id="letterLayer">
+  <article id="letter" aria-live="polite"><svg class="div" id="d1" viewBox="0 0 260 70" aria-hidden="true"></svg><div id="lt"></div></article>
+</section>
+</main>
+
+<div id="cats" aria-hidden="true"></div>
+
+<audio id="song" src="song.mp3" loop preload="auto"></audio>
+
+<script>
+/* ============ CONFIG: edit these ============ */
+const FROM = "Your name";           // signature at the bottom of the letter
+const LETTER = [
+  "Happy birthday, Em.",
+  "Thank you for helping me in so many ways. You showed up when I needed you, and you made the hard days lighter. I don't say it enough, so I built this to say it properly.",
+  "I'm grateful for you today and every day. I hope this year gives you back everything you have given me."
+];
+const MAX_PHOTOS = 40;              // photos are 1.jpeg, 2.jpeg, 3.jpeg ... it stops at the first missing one
+/* ============================================= */
+
+const $ = id => document.getElementById(id);
+const body = document.body, garden = $("garden"), song = $("song");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, reduced ? ms / 10 : ms));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs = {}, parent){
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+
+/* ---------- flower parts ---------- */
+const PETAL = "M0 0 C -21 -18 -25 -52 0 -86 C 25 -52 21 -18 0 0Z";
+const LEAF  = "M0 0 C 16 -14 34 -42 0 -80 C -34 -42 -16 -14 0 0Z";
+
+// A bloom: three layers of pointed petals + a stamen crown. `late` blooms stay buds until the finale.
+function bloom(parent, x, y, s, base, late){
+  const L_ = late ? " late" : "";
+  const g = el("g", { transform: `translate(${x} ${y}) scale(${s})` }, parent);
+  [{ n: 12, len: 1, rot: 0, fill: "url(#pA)", cls: "" },
+   { n: 9, len: .76, rot: 20, fill: "url(#pB)", cls: "" },
+   { n: 7, len: .52, rot: 8, fill: "url(#pC)", cls: "c" }].forEach((L, li) => {
+    for (let i = 0; i < L.n; i++){
+      const pg = el("g", { transform: `rotate(${i * 360 / L.n + L.rot}) scale(${L.len})` }, g);
+      const p = el("g", { class: "petal" + L_ }, pg);
+      p.style.setProperty("--d", (base + li * .55 + i * .09) + "s");
+      el("path", { d: PETAL, fill: L.fill, class: L.cls }, p);
+      el("path", { d: "M0 -8 C 1.5 -34 1.5 -56 0 -72", class: "vein" }, p);
+    }
+  });
+  const core = el("g", { class: "core" + L_ }, g);
+  core.style.setProperty("--d", (base + 2.1) + "s");
+  el("circle", { r: 11, fill: "var(--fg)" }, core);
+  for (let i = 0; i < 20; i++){
+    const a = (i * 18 + (i % 2) * 6) * Math.PI / 180, r2 = 15 + (i % 3) * 5;
+    el("line", { x1: Math.cos(a) * 7, y1: Math.sin(a) * 7, x2: Math.cos(a) * r2, y2: Math.sin(a) * r2,
+      stroke: "var(--bg)", "stroke-width": .9, "vector-effect": "non-scaling-stroke" }, core);
+    el("circle", { cx: Math.cos(a) * (r2 + 1.5), cy: Math.sin(a) * (r2 + 1.5), r: 1.6, fill: "var(--bg)" }, core);
+  }
+}
+function leaf(parent, x, y, angle, s, delay){
+  const g = el("g", { transform: `translate(${x} ${y}) rotate(${angle}) scale(${s})` }, parent);
+  const l = el("g", { class: "leaf" }, g);
+  l.style.setProperty("--ld", delay + "s");
+  el("path", { d: LEAF }, l);
+  el("path", { d: "M0 -4 L0 -70", class: "rib" }, l);
+}
+function stem(parent, d, sd, cls){
+  const p = el("path", { d, class: "stem " + (cls || ""), pathLength: 1 }, parent);
+  p.style.setProperty("--sd", sd + "s");
+}
+// Curling tendril: a shrinking spiral that starts at (x,y)
+function tendril(parent, x, y, dir, size, sd){
+  const R0 = 14 * size, base = dir > 0 ? 0 : Math.PI;
+  const cx = x - R0 * Math.cos(base), cy = y - R0 * Math.sin(base);
+  let d = "";
+  for (let t = 0; t <= 1.001; t += .035){
+    const th = base + dir * t * Math.PI * 4.2, r = R0 * (1 - t * .88);
+    d += (t === 0 ? "M" : "L") + (cx + r * Math.cos(th)).toFixed(1) + " " + (cy + r * Math.sin(th)).toFixed(1);
+  }
+  stem(parent, d, sd, "tend");
+}
+// A plant = stem + leaves + tendrils + side branches with their own blooms, swaying as one piece
+function plant(parent, o){
+  const g = el("g", { class: "plant" }, parent);
+  g.style.setProperty("--ox", o.ox + "px");
+  g.style.setProperty("--sw", o.sway + "s");
+  stem(g, o.stem, o.sd);
+  (o.branches || []).forEach(b => { stem(g, b.d, b.sd, "thin"); (b.leaves || []).forEach(L => leaf(g, ...L)); bloom(g, ...b.bloom); });
+  (o.leaves || []).forEach(L => leaf(g, ...L));
+  (o.tendrils || []).forEach(t => tendril(g, ...t));
+  bloom(g, ...o.bloom);
+}
+
+/* ---------- build the garden ---------- */
+const back = $("back"), front = $("front");
+
+// ripples that pulse out from the main bloom
+[0, 2.3, 4.6].forEach(d => { const c = el("circle", { cx: 200, cy: 190, r: 150, class: "ring" }, back); c.style.setProperty("--rd", d + "s"); });
+
+// grass
+for (let i = 0; i < 40; i++){
+  const x = 8 + i * 9.8 + Math.random() * 4, h = 14 + Math.random() * 26, dx = (Math.random() - .5) * 12;
+  const g = el("g", { class: "blade-g" }, back); g.style.setProperty("--g", (.4 + Math.random() * 2.4) + "s");
+  const p = el("path", { d: `M${x} 474 Q ${x + dx / 2} ${474 - h * .6} ${x + dx} ${474 - h}`, class: "blade" }, g);
+  p.style.setProperty("--w", (-Math.random() * 4) + "s");
+}
+
+// far low plants (buds until the finale)
+plant(front, { ox: 180, sway: -1, sd: 1.7, stem: "M180 472 C 120 476, 64 462, 36 424", bloom: [34, 420, .24, .2, true],
+  leaves: [[110, 468, -80, .4, 3]] });
+plant(front, { ox: 220, sway: -3, sd: 2, stem: "M220 472 C 284 476, 338 464, 366 430", bloom: [366, 426, .24, .4, true],
+  leaves: [[290, 470, 80, .4, 3.1]] });
+
+// left + right plants
+plant(front, { ox: 190, sway: -2, sd: .9, stem: "M190 472 C 140 452, 80 398, 70 300", bloom: [70, 296, .62, .8],
+  branches: [{ d: "M122 430 C 92 420, 54 398, 44 356", sd: 2, bloom: [44, 352, .3, .3, true], leaves: [[96, 424, -70, .4, 3.2]] }],
+  leaves: [[150, 450, -72, .6, 2.3], [100, 372, 68, .5, 2.6]], tendrils: [[140, 441, -1, .8, 3]] });
+plant(front, { ox: 210, sway: -4, sd: 1.2, stem: "M210 472 C 262 458, 330 392, 332 292", bloom: [332, 288, .66, 1.1],
+  branches: [{ d: "M288 436 C 322 430, 354 412, 362 380", sd: 2.4, bloom: [362, 376, .28, .5, true], leaves: [[318, 428, 72, .4, 3.4]] }],
+  leaves: [[262, 448, 74, .6, 2.5], [326, 340, -64, .5, 2.8]], tendrils: [[272, 440, 1, .8, 3.2]] });
+
+// main plant: tall stem, four side branches, tendrils
+plant(front, { ox: 200, sway: 0, sd: .2, stem: "M200 472 C 192 380, 210 290, 200 192", bloom: [200, 188, 1.2, 0],
+  branches: [
+    { d: "M197 412 C 160 394, 122 360, 110 308", sd: .8, bloom: [110, 304, .5, 1.0], leaves: [[150, 392, -66, .5, 2.4]] },
+    { d: "M203 362 C 242 346, 278 314, 288 268", sd: 1.1, bloom: [288, 264, .46, 1.3], leaves: [[250, 340, 66, .45, 2.7]] },
+    { d: "M199 306 C 172 290, 148 268, 142 238", sd: 1.4, bloom: [142, 234, .3, .3, true], leaves: [[170, 288, -60, .38, 3]] },
+    { d: "M201 272 C 228 260, 250 240, 256 214", sd: 1.6, bloom: [256, 210, .26, .5, true], leaves: [] }
+  ],
+  leaves: [[199, 452, -60, .95, 1.6], [201, 420, 58, .9, 1.8], [199, 388, -54, .8, 2.0], [201, 345, 52, .7, 2.2], [200, 322, -46, .6, 2.4], [201, 292, 44, .5, 2.6]],
+  tendrils: [[197, 430, -1, 1, 2.8], [203, 400, 1, .9, 3], [201, 330, -1, .8, 3.2], [200, 252, 1, .7, 3.4]] });
+
+// dust motes that drift up once the garden opens
+for (let i = 0; i < 18; i++){
+  const c = el("circle", { cx: 20 + Math.random() * 360, cy: 300 + Math.random() * 170, r: (1 + Math.random() * 1.4).toFixed(1), class: "spark" }, front);
+  c.style.setProperty("--sk", (Math.random() * 9) + "s"); c.style.setProperty("--dx", (Math.random() * 60 - 30) + "px");
+}
+
+// small flower at the top of the letter
+(function(){
+  const s = $("d1");
+  el("line", { x1: 8, y1: 42, x2: 96, y2: 42 }, s); el("line", { x1: 164, y1: 42, x2: 252, y2: 42 }, s);
+  leaf(s, 112, 46, -70, .22, 0); leaf(s, 148, 46, 70, .22, 0);
+  bloom(s, 130, 44, .36, 0);
+})();
+
+/* ---------- petals falling over the page ---------- */
+function petalRain(n){
+  for (let i = 0; i < n; i++){
+    const s = document.createElement("span");
+    s.className = "petal-fall";
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.setProperty("--dx", (Math.random() * 120 - 60) + "px");
+    s.style.animationDuration = (7 + Math.random() * 6) + "s";
+    s.style.animationDelay = (Math.random() * 4) + "s";
+    s.addEventListener("animationend", () => s.remove());
+    document.body.appendChild(s);
+  }
+}
+
+/* ---------- photos: probe 1.jpeg, 2.jpeg ... until one is missing ---------- */
+const photos = [];
+(function probe(n){
+  if (n > MAX_PHOTOS) return;
+  const img = new Image();
+  img.alt = "Memory " + n; img.decoding = "async";
+  img.onload = () => { $("inner").appendChild(img); photos.push(img); probe(n + 1); };
+  img.src = n + ".jpeg";
+})(1);
+
+let current = null;
+function showPhoto(img, hold){
+  if (img === current) return;
+  if (current){ current.classList.remove("on"); current.classList.add("out"); }
+  img.style.setProperty("--hold", (hold + 2) + "s");
+  img.classList.remove("out"); void img.offsetWidth; img.classList.add("on");
+  current = img;
+}
+
+/* ---------- letter ---------- */
+async function writeLetter(){
+  const box = $("lt");
+  const clear = () => box.querySelectorAll(".caret").forEach(c => c.classList.remove("caret"));
+  for (let i = 0; i < LETTER.length; i++){
+    const p = document.createElement("p");
+    if (i === 0) p.className = "big";
+    clear(); box.appendChild(p); p.classList.add("caret");
+    if (reduced){ p.textContent = LETTER[i]; continue; }
+    for (const ch of LETTER[i]){ p.textContent += ch; await sleep(i === 0 ? 100 : 52); }
+    await sleep(700);
+  }
+  const sig = document.createElement("p");
+  sig.className = "sig"; sig.textContent = "With love, " + FROM;
+  clear(); box.appendChild(sig);
+}
+
+/* ---------- the cats: two of them, wandering the whole screen ---------- */
+const CAT_SVG = `<svg class="csvg" viewBox="0 0 120 90">
+<ellipse class="shade" cx="56" cy="86" rx="44" ry="4"/>
+<g class="torso">
+ <g class="tailg"><path class="tl o" d="M20 54 C 2 54, -4 30, 10 20"/><path class="tl i" d="M20 54 C 2 54, -4 30, 10 20"/></g>
+ <rect class="leg bk a fc" x="24" y="58" width="10" height="27" rx="5"/>
+ <rect class="leg bk b fc" x="40" y="58" width="10" height="27" rx="5"/>
+ <rect class="leg fr b fc" x="78" y="58" width="10" height="27" rx="5"/>
+ <rect class="leg fr a fn fc" x="94" y="58" width="10" height="27" rx="5"/>
+ <ellipse class="fc" cx="56" cy="50" rx="40" ry="21"/>
+ <ellipse class="patch" cx="46" cy="36" rx="16" ry="8"/>
+ <g class="head">
+  <polygon class="fc" points="86,26 88,6 102,20"/><polygon class="fc" points="100,19 114,8 114,30"/>
+  <circle class="fc" cx="100" cy="38" r="18"/>
+  <ellipse class="patch" cx="93" cy="31" rx="8" ry="9"/>
+  <ellipse class="eye" cx="94" cy="36" rx="2.6" ry="3.6"/><ellipse class="eye" cx="108" cy="36" rx="2.6" ry="3.6"/>
+  <path class="nose" d="M101 44 h4 l-2 3z"/><path class="face" d="M103 47 q-3 4 -7 2 M103 47 q3 4 7 2"/>
+  <path class="wh" d="M114 44 L130 40 M114 47 L130 49"/>
+ </g>
+</g></svg>`;
+
+const depth = y => clamp(.7 + .5 * y / innerHeight, .7, 1.2);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+class Cat{
+  constructor(e){ this.el = e; this.flip = e.querySelector(".flip"); this.x = -200; this.y = 200; this.f = 1; this.goal = null; this.chase = null; this.state = ""; this.mods = new Set(); }
+  paint(){ this.el.className = "cat " + this.el.dataset.k + " " + this.state + " " + [...this.mods].join(" "); }
+  set(st){ if (st !== this.state){ this.state = st; this.paint(); } }
+  mod(m, on){ on ? this.mods.add(m) : this.mods.delete(m); this.paint(); }
+  face(f){ this.f = f; this.flip.style.setProperty("--f", f); }
+  go(x, y, speed = 60){ return new Promise(res => { this.chase = null; this.goal = { x, y, speed, res }; this.set(speed > 110 ? "run" : "walk"); }); }
+  stop(){ this.goal = null; this.chase = null; this.set(""); }
+  step(dt){
+    let tx, ty, sp, g = this.goal;
+    if (this.chase){ const t = this.chase.t, side = this.x < t.x ? -1 : 1; tx = t.x + side * 60 * depth(t.y); ty = t.y + 2; sp = this.chase.speed; }
+    else if (g){ tx = g.x; ty = g.y; sp = g.speed; }
+    else return;
+    const dx = tx - this.x, dy = ty - this.y, d = Math.hypot(dx, dy), stp = sp * dt;
+    if (this.chase) this.set(d > stp + 1 ? "run" : "");
+    if (d <= stp + 1){
+      this.x = tx; this.y = ty;
+      if (g && !this.chase){ this.goal = null; this.set(""); g.res(); }
+    } else {
+      if (Math.abs(dx) > 4) this.face(dx > 0 ? 1 : -1);
+      this.x += dx / d * stp; this.y += dy / d * stp;
+    }
+  }
+  render(){ this.el.style.transform = `translate(${this.x}px,${this.y}px) scale(${depth(this.y)})`; this.el.style.zIndex = Math.round(this.y); }
+}
+
+let A, B, catsOn = false;
+function bounds(){
+  const w = innerWidth, h = innerHeight, letter = body.classList.contains("s-letter");
+  return { x0: 8, x1: Math.max(60, w - 140), y0: letter ? h * .8 : h * .1, y1: Math.max(h * .5, h - 110) };
+}
+const rnd = () => { const b = bounds(); return { x: b.x0 + Math.random() * (b.x1 - b.x0), y: b.y0 + Math.random() * (b.y1 - b.y0) }; };
+function fx(ch, x, y, cls = ""){
+  const e = document.createElement("span");
+  e.className = "fx " + cls; e.textContent = ch; e.style.left = x + "px"; e.style.top = y + "px";
+  e.style.setProperty("--dx", (Math.random() * 40 - 20) + "px");
+  e.addEventListener("animationend", () => e.remove());
+  document.body.appendChild(e);
+}
+
+// both cats walk (usually together), sometimes sitting side by side
+async function stroll(n){
+  for (let i = 0; i < n; i++){
+    const b = bounds(), p = rnd(), sp = 45 + Math.random() * 25;
+    const q = Math.random() < .6
+      ? { x: clamp(p.x + (Math.random() < .5 ? -1 : 1) * 110, b.x0, b.x1), y: clamp(p.y + 14, b.y0, b.y1) }
+      : rnd();
+    await Promise.all([A.go(p.x, p.y, sp), B.go(q.x, q.y, sp + 6)]);
+    if (Math.random() < .5){ A.set("sit"); B.set("sit"); await wait(1800 + Math.random() * 2200); A.set(""); B.set(""); }
+  }
+}
+// walk to a shared spot and stand facing each other
+async function meet(gap){
+  const b = bounds(), xmax = Math.max(8, innerWidth - (gap + 110) * 1.2 - 8);
+  const x = 8 + Math.random() * (xmax - 8), y = b.y0 + Math.random() * (b.y1 - b.y0), s = depth(y);
+  await Promise.all([A.go(x, y, 85), B.go(x + gap * s, y, 85)]);
+  A.face(1); B.face(-1); return s;
+}
+async function kiss(){
+  const s = await meet(100);                      // noses end up touching
+  A.mod("kiss", true); B.mod("kiss", true); A.mod("happy", true); B.mod("happy", true);
+  for (let i = 0; i < 7; i++){ fx("♥", A.x + 105 * s, A.y + 8 * s); await wait(650); }
+  ["kiss", "happy"].forEach(m => { A.mod(m, false); B.mod(m, false); });
+  A.mod("hop", true); B.mod("hop", true); await wait(1200); A.mod("hop", false); B.mod("hop", false);
+}
+async function cuddle(){
+  const s = await meet(100);
+  A.set("lie"); B.set("lie");
+  for (let i = 0; i < 9; i++){ i % 2 ? fx("♥", A.x + 105 * s, A.y + 22 * s) : fx("z", A.x + 90 * s, A.y + 10 * s, "z"); await wait(950); }
+  A.set("sit"); B.set("sit"); await wait(1500); A.set(""); B.set("");
+}
+async function fight(){
+  const s = await meet(135);                      // face to face, a paw apart
+  for (let r = 0; r < 3; r++) for (const c of [A, B]){
+    c.mod("swat", true); fx("✸", (A.x + B.x) / 2 + 55 * s, A.y + 20 * s, "sp"); await wait(850); c.mod("swat", false);
+  }
+  A.chase = { t: B, speed: 140 };                 // B bolts, A gives chase
+  for (let k = 0; k < 3; k++){ const p = rnd(); await B.go(p.x, p.y, 135); }
+  B.stop(); await A.go(B.x - 40 * depth(B.y), B.y + 3, 140);
+  A.stop(); A.face(1); B.face(-1);
+  A.mod("tumble", true); B.mod("tumble", true);   // rolling around, wrestling
+  for (let i = 0; i < 6; i++){ fx(i % 2 ? "✸" : "!", B.x + 30 * depth(B.y), B.y + 10, "sp"); await wait(380); }
+  A.mod("tumble", false); B.mod("tumble", false);
+  A.set("sit"); B.set("sit"); await wait(1800); A.set(""); B.set("");
+  if (Math.random() < .75) await kiss();          // and then they make up
+}
+
+function startCats(){
+  if (catsOn) return; catsOn = true;
+  const box = $("cats");
+  box.innerHTML = ["A", "B"].map(k => `<div class="cat cat${k}" data-k="cat${k}"><div class="hopper"><div class="flip">${CAT_SVG}</div></div></div>`).join("");
+  [A, B] = [...box.children].map(e => new Cat(e));
+  A.el.style.opacity = B.el.style.opacity = 1;
+  if (reduced){                                    // reduced motion: two cats asleep together, nothing moves
+    A.x = innerWidth / 2 - 115; B.x = A.x + 100; A.y = B.y = innerHeight - 120;
+    A.face(1); B.face(-1); [A, B].forEach(c => { c.set("lie"); c.render(); }); return;
+  }
+  A.x = -160; A.y = rnd().y; B.x = innerWidth + 40; B.y = rnd().y;
+  let last = 0;
+  (function tick(ts){ const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; [A, B].forEach(c => { c.step(dt); c.render(); }); requestAnimationFrame(tick); })(0);
+  (async () => {
+    await stroll(1); await kiss();
+    let prev = -1; const eps = [kiss, fight, cuddle];
+    for (;;){
+      let i; do { i = Math.floor(Math.random() * 3); } while (i === prev); prev = i;
+      await eps[i](); await stroll(1 + Math.floor(Math.random() * 2));
+    }
+  })();
+}
+
+/* ---------- the timeline: hands-free, paced to the length of the song ---------- */
+function scene(n){
+  ["pre", "intro", "photos", "letter", "finale"].forEach(s => body.classList.remove("s-" + s));
+  body.classList.add("s-" + n);
+}
+
+async function run(){
+  const T = (isFinite(song.duration) && song.duration > 30) ? song.duration : 180;
+
+  // 1. the garden blooms
+  scene("intro"); garden.classList.add("open"); petalRain(12);
+  setTimeout(startCats, 2500);
+  setInterval(() => { if (!document.hidden) petalRain(2); }, 2600);
+  sleep(5500).then(() => body.classList.add("hero-on"));
+  await sleep(16000);
+  body.classList.remove("hero-on");
+
+  // 2. photos: each one holds long enough that a few photos still fill the time; the set repeats until it's time for the letter
+  const n = photos.length;
+  if (n){
+    scene("photos");
+    const per = clamp((T - 75) / n, 6, 13);
+    let t = 16, i = 0;
+    do { showPhoto(photos[i % n], per); await sleep(per * 1000); t += per; i++; } while (t < T - 60);
+  }
+
+  // 3. the letter
+  scene("letter"); $("d1").classList.add("open");
+  await sleep(2000); await writeLetter(); await sleep(8000);
+
+  // 4. finale: the buds open, the garden returns, and it keeps moving until the song ends
+  scene("finale"); $("sub").textContent = "Thank you for everything.";
+  body.classList.add("hero-on"); garden.classList.add("open2");
+  sleep(8000).then(() => body.classList.add("late-on"));
+  petalRain(20);
+}
+
+$("openBtn").addEventListener("click", () => {
+  song.volume = .8;
+  song.play().catch(() => {});            // the tap satisfies the browser's autoplay rule
+  run();
+});
+$("replay").addEventListener("click", () => location.reload());
+$("mute").addEventListener("click", () => {
+  const off = !song.paused;
+  off ? song.pause() : song.play();
+  $("mute").textContent = off ? "✕" : "♪";
+  $("mute").setAttribute("aria-label", off ? "Play music" : "Mute music");
+});
+
+console.log("%cHappy birthday, Em 🖤", "font:700 20px Georgia");
+console.log("%c// if you're reading this, you found the part only a developer would look at.", "color:#888");
+</script>
+</body>
+</html>
