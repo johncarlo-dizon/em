@@ -136,6 +136,41 @@ body:not(.s-pre) #mute{display:block}
 @keyframes lunge{to{transform:translateX(6px)}}
 @keyframes tumble{from{transform:rotate(-14deg) translateY(-3px)}to{transform:rotate(14deg) translateY(3px)}}
 @keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-24px)}}
+.crouch .torso{transform-origin:50% 100%;transform:translateY(17px) scaleY(.76)}
+.crouch .head{transform:translate(4px,8px)}.crouch .leg{opacity:0}.crouch .tailg{animation-duration:.3s}
+.air .leg.fr{transform:rotate(-38deg)}.air .leg.bk{transform:rotate(38deg)}.air .torso{transform:rotate(-8deg)}.air .shade{opacity:.04}
+.groom .leg.fn{animation:lickpaw .45s ease-in-out infinite alternate}
+.groom .head{animation:lick .5s ease-in-out infinite alternate}
+.lick .head{animation:lick .55s ease-in-out infinite alternate}
+.look .head{animation:tilt 1.3s ease-in-out infinite alternate}
+.stretch .torso{transform-origin:90% 100%;transform:rotate(9deg)}.stretch .head{transform:translate(4px,10px)}
+.roll .hopper{animation:roll .9s linear infinite}.roll .leg{animation:swing .25s ease-in-out infinite alternate}
+@keyframes lickpaw{from{transform:rotate(-150deg)}to{transform:rotate(-176deg)}}
+@keyframes lick{to{transform:translate(4px,6px) rotate(10deg)}}
+@keyframes tilt{from{transform:rotate(-9deg)}to{transform:rotate(7deg) translateY(-2px)}}
+@keyframes roll{to{transform:rotate(360deg)}}
+.bug{position:fixed;left:0;top:0;z-index:3;width:22px;height:16px;pointer-events:none;opacity:0;transition:opacity .6s}
+.bug svg{display:block;width:100%;height:100%;fill:var(--fg);animation:flap .16s ease-in-out infinite alternate}
+@keyframes flap{to{transform:scaleX(.3)}}
+.cat{pointer-events:auto;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.still .leg,.still .torso{animation:none}
+.mad .csvg{animation:shake .09s linear infinite alternate}
+.mad .csvg .eye{animation:none;transform:scaleY(.45)}
+.mad .tailg{animation-duration:.14s}
+.mad .csvg .tl.o{stroke-width:15}.mad .csvg .tl.i{stroke-width:10.5}
+.flirt .csvg .eye~.eye{animation:none;transform:scaleY(.1)}
+.flirt .head{animation:swoon 1s ease-in-out infinite alternate}
+.flirt .tailg{animation-duration:.5s}
+@keyframes shake{from{transform:translateX(-2px) rotate(-1.2deg)}to{transform:translateX(2px) rotate(1.2deg)}}
+@keyframes swoon{from{transform:rotate(-6deg)}to{transform:rotate(7deg) translateY(-2px)}}
+.bubble{position:absolute;left:50%;bottom:100%;margin-bottom:6px;width:max-content;max-width:190px;transform-origin:50% 100%;
+  transform:translateX(calc(-50% + var(--sx,0px))) scale(var(--inv,1));background:var(--bg);color:var(--fg);border:1px solid var(--fg);border-radius:14px;
+  padding:.35rem .75rem;font:italic 1rem/1.25 var(--serif);text-align:center;pointer-events:none;box-shadow:0 6px 16px rgba(0,0,0,.12);animation:bub 3.2s ease-out forwards}
+.bubble::after{content:"";position:absolute;left:calc(50% - var(--sx,0px));top:100%;margin-left:-6px;border:6px solid transparent;border-top-color:var(--fg)}
+.bubble.below{bottom:auto;top:100%;margin:6px 0 0;transform-origin:50% 0}
+.bubble.below::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:var(--fg)}
+@keyframes bub{0%{opacity:0;transform:translateX(calc(-50% + var(--sx,0px))) scale(calc(var(--inv,1)*.6))}
+  8%,85%{opacity:1;transform:translateX(calc(-50% + var(--sx,0px))) scale(var(--inv,1))}100%{opacity:0;transform:translateX(calc(-50% + var(--sx,0px))) scale(var(--inv,1))}}
 .fx{position:fixed;z-index:6;pointer-events:none;font-size:1.3rem;line-height:1;animation:fxup 1.9s ease-out forwards}
 .fx.z{font-family:var(--serif);font-style:italic;font-size:1.1rem}.fx.sp{font-size:1.5rem}
 @keyframes fxup{0%{transform:translate(-50%,0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translate(calc(-50% + var(--dx,0px)),-70px) scale(1.2);opacity:0}}
@@ -188,6 +223,7 @@ const LETTER = [
   "Thank you for helping me in so many ways. You showed up when I needed you, and you made the hard days lighter. I don't say it enough, so I built this to say it properly.",
   "I'm grateful for you today and every day. I hope this year gives you back everything you have given me."
 ];
+const HER = "Em";                  // the cats use this name when they talk to her
 const MAX_PHOTOS = 40;              // photos are 1.jpeg, 2.jpeg, 3.jpeg ... it stops at the first missing one
 /* ============================================= */
 
@@ -370,7 +406,7 @@ async function writeLetter(){
   clear(); box.appendChild(sig);
 }
 
-/* ---------- the cats: two of them, wandering the whole screen ---------- */
+/* ---------- the cats: two of them, with their own moods ---------- */
 const CAT_SVG = `<svg class="csvg" viewBox="0 0 120 90">
 <ellipse class="shade" cx="56" cy="86" rx="44" ry="4"/>
 <g class="torso">
@@ -391,18 +427,35 @@ const CAT_SVG = `<svg class="csvg" viewBox="0 0 120 90">
  </g>
 </g></svg>`;
 
+const BUG_SVG = `<svg viewBox="0 0 22 16"><ellipse cx="6" cy="8" rx="6" ry="6"/><ellipse cx="16" cy="8" rx="6" ry="6"/><rect x="10" y="3" width="2" height="10" rx="1" style="fill:var(--bg)"/></svg>`;
+
 const depth = y => clamp(.7 + .5 * y / innerHeight, .7, 1.2);
 const wait = ms => new Promise(r => setTimeout(r, ms));
+const rr = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[Math.floor(Math.random() * a.length)];
 
 class Cat{
-  constructor(e){ this.el = e; this.flip = e.querySelector(".flip"); this.x = -200; this.y = 200; this.f = 1; this.goal = null; this.chase = null; this.state = ""; this.mods = new Set(); }
+  constructor(e){ this.el = e; this.flip = e.querySelector(".flip"); this.x = -200; this.y = 200; this.f = 1; this.air = 0;
+    this.goal = null; this.chase = null; this.jp = null; this.state = ""; this.mods = new Set(); this.hold = 0; this.talk = false; this.clicks = []; }
   paint(){ this.el.className = "cat " + this.el.dataset.k + " " + this.state + " " + [...this.mods].join(" "); }
   set(st){ if (st !== this.state){ this.state = st; this.paint(); } }
   mod(m, on){ on ? this.mods.add(m) : this.mods.delete(m); this.paint(); }
   face(f){ this.f = f; this.flip.style.setProperty("--f", f); }
-  go(x, y, speed = 60){ return new Promise(res => { this.chase = null; this.goal = { x, y, speed, res }; this.set(speed > 110 ? "run" : "walk"); }); }
-  stop(){ this.goal = null; this.chase = null; this.set(""); }
+  go(x, y, speed = 60){ return new Promise(res => { this.chase = null; this.jp = null; this.air = 0; this.goal = { x, y, speed, res }; this.set(speed > 110 ? "run" : "walk"); }); }
+  jump(x, y, h = 80, dur = .7){ return new Promise(res => {
+    this.goal = null; this.chase = null;
+    this.jp = { x0: this.x, y0: this.y, x1: x, y1: y, h, dur, t: 0, res };
+    if (Math.abs(x - this.x) > 4) this.face(x > this.x ? 1 : -1);
+    this.set("air"); }); }
+  stop(){ this.goal = null; this.chase = null; this.jp = null; this.air = 0; this.set(""); }
   step(dt){
+    if (this.hold > 0){ this.hold -= dt; if (!this.jp) return; }   // frozen while reacting to a tap
+    if (this.jp){                                  // mid-jump: straight line on the ground, parabola in the air
+      const j = this.jp; j.t += dt / j.dur; const r = Math.min(1, j.t);
+      this.x = j.x0 + (j.x1 - j.x0) * r; this.y = j.y0 + (j.y1 - j.y0) * r; this.air = -4 * j.h * r * (1 - r);
+      if (r >= 1){ this.jp = null; this.air = 0; this.set(""); j.res(); }
+      return;
+    }
     let tx, ty, sp, g = this.goal;
     if (this.chase){ const t = this.chase.t, side = this.x < t.x ? -1 : 1; tx = t.x + side * 60 * depth(t.y); ty = t.y + 2; sp = this.chase.speed; }
     else if (g){ tx = g.x; ty = g.y; sp = g.speed; }
@@ -417,7 +470,7 @@ class Cat{
       this.x += dx / d * stp; this.y += dy / d * stp;
     }
   }
-  render(){ this.el.style.transform = `translate(${this.x}px,${this.y}px) scale(${depth(this.y)})`; this.el.style.zIndex = Math.round(this.y); }
+  render(){ this.el.style.transform = `translate(${this.x}px,${this.y + this.air * depth(this.y)}px) scale(${depth(this.y)})`; this.el.style.zIndex = Math.round(this.y) + (this.talk ? 5000 : 0); }
 }
 
 let A, B, catsOn = false;
@@ -433,8 +486,69 @@ function fx(ch, x, y, cls = ""){
   e.addEventListener("animationend", () => e.remove());
   document.body.appendChild(e);
 }
+const fxc = (c, ch, cls = "") => fx(ch, c.x + (c.f > 0 ? 100 : 10) * depth(c.y), c.y + 4 * depth(c.y), cls);   // above a cat's head
 
-// both cats walk (usually together), sometimes sitting side by side
+/* a little butterfly to hunt */
+const bug = { on: false, x: 0, y: 0, ang: 0, flee: 0, el: null };
+function bugStart(){
+  const b = bounds(), e = document.createElement("div");
+  e.className = "bug"; e.innerHTML = BUG_SVG; document.body.appendChild(e);
+  Object.assign(bug, { on: true, el: e, x: rr(60, innerWidth - 60), y: rr(b.y0, b.y1), ang: rr(0, 6.28), flee: 0 });
+  requestAnimationFrame(() => e.style.opacity = 1);
+}
+function bugStop(){ bug.on = false; const e = bug.el; e.style.opacity = 0; setTimeout(() => e.remove(), 700); }
+function bugStep(dt, ts){
+  const b = bounds();
+  bug.ang += (Math.random() - .5) * dt * 5;
+  const sp = bug.flee > 0 ? 170 : 38; bug.flee = Math.max(0, bug.flee - dt);
+  bug.x += Math.cos(bug.ang) * sp * dt; bug.y += Math.sin(bug.ang) * sp * dt * .7 + Math.sin(ts / 260) * .35;
+  if (bug.x < 20 || bug.x > innerWidth - 30){ bug.ang = Math.PI - bug.ang; bug.x = clamp(bug.x, 20, innerWidth - 30); }
+  if (bug.y < b.y0 || bug.y > b.y1){ bug.ang = -bug.ang; bug.y = clamp(bug.y, b.y0, b.y1); }
+  bug.el.style.transform = `translate(${bug.x}px,${bug.y}px)`;
+}
+
+/* ----- things ONE cat can do on its own ----- */
+const ACT = {
+  async groom(c){ c.set("sit"); c.mod("groom", true); await wait(rr(3000, 4800)); c.mod("groom", false); c.set(""); },
+  async stretch(c){ c.mod("stretch", true); await wait(2300); c.mod("stretch", false); },
+  async roll(c){ c.mod("roll", true); await wait(1500); c.mod("roll", false); },
+  async nap(c){ c.set("lie"); for (let i = 0; i < 3; i++){ fxc(c, "z", "z"); await wait(1500); } c.set(""); },
+  async look(c){ c.set("sit"); c.mod("look", true); await wait(rr(2500, 4000)); c.mod("look", false); c.set(""); },
+  async tailchase(c){                              // spins in a little circle after its own tail
+    const b = bounds(), r = 30 * depth(c.y), x = clamp(c.x, b.x0 + r, b.x1 - r), y = c.y;
+    c.mod("happy", true);
+    for (let k = 1; k <= 10; k++){ const a = k * Math.PI / 4; await c.go(x + Math.cos(a) * r - r, y + Math.sin(a) * r * .35, 130); }
+    c.mod("happy", false);
+  },
+  async zoomies(c){ for (let k = 0; k < 4; k++){ const p = rnd(); await c.go(p.x, p.y, rr(170, 210)); } },
+  async parkour(c){                                // run, leap, run, leap
+    for (let k = 0; k < 3; k++){
+      const p = rnd(), dir = p.x > c.x ? 1 : -1;
+      await c.go(clamp(p.x - dir * 110, 8, bounds().x1), p.y, rr(95, 130));
+      await c.jump(p.x, p.y, rr(70, 130), .75);
+    }
+  },
+  async pounce(c){                                 // sneak, wiggle, spring
+    const p = rnd(); await c.go(p.x, p.y, 50); c.set("crouch"); await wait(1100);
+    const b = bounds(); await c.jump(clamp(p.x + c.f * 170, b.x0, b.x1), p.y, 60, .55); fxc(c, "!", "sp"); await wait(500);
+  },
+  async leap(c){                                   // happy jumps on the spot
+    for (let k = 0; k < 3; k++){
+      const b = bounds();
+      await c.jump(clamp(c.x + rr(-120, 120), b.x0, b.x1), clamp(c.y + rr(-50, 50), b.y0, b.y1), rr(90, 140), .8); await wait(300);
+    }
+  }
+};
+const ONE = Object.keys(ACT);
+
+// Each cat does its own thing; 40% of the time they happen to pick the same one
+async function soloPair(){
+  for (let r = 0; r < 2; r++){
+    const same = Math.random() < .4, ka = pick(ONE), kb = same ? ka : pick(ONE.filter(k => k !== ka));
+    await Promise.all([ACT[ka](A), wait(same ? rr(0, 600) : 0).then(() => ACT[kb](B))]);
+  }
+}
+// both walk (usually together), sometimes sitting side by side
 async function stroll(n){
   for (let i = 0; i < n; i++){
     const b = bounds(), p = rnd(), sp = 45 + Math.random() * 25;
@@ -445,15 +559,16 @@ async function stroll(n){
     if (Math.random() < .5){ A.set("sit"); B.set("sit"); await wait(1800 + Math.random() * 2200); A.set(""); B.set(""); }
   }
 }
-// walk to a shared spot and stand facing each other
-async function meet(gap){
+
+/* ----- things the two cats do TOGETHER ----- */
+async function meet(gap){                          // walk to a shared spot and stand facing each other
   const b = bounds(), xmax = Math.max(8, innerWidth - (gap + 110) * 1.2 - 8);
   const x = 8 + Math.random() * (xmax - 8), y = b.y0 + Math.random() * (b.y1 - b.y0), s = depth(y);
   await Promise.all([A.go(x, y, 85), B.go(x + gap * s, y, 85)]);
   A.face(1); B.face(-1); return s;
 }
 async function kiss(){
-  const s = await meet(100);                      // noses end up touching
+  const s = await meet(100);                       // noses end up touching
   A.mod("kiss", true); B.mod("kiss", true); A.mod("happy", true); B.mod("happy", true);
   for (let i = 0; i < 7; i++){ fx("♥", A.x + 105 * s, A.y + 8 * s); await wait(650); }
   ["kiss", "happy"].forEach(m => { A.mod(m, false); B.mod(m, false); });
@@ -465,20 +580,133 @@ async function cuddle(){
   for (let i = 0; i < 9; i++){ i % 2 ? fx("♥", A.x + 105 * s, A.y + 22 * s) : fx("z", A.x + 90 * s, A.y + 10 * s, "z"); await wait(950); }
   A.set("sit"); B.set("sit"); await wait(1500); A.set(""); B.set("");
 }
+async function nuzzle(){                           // one washes the other until it falls asleep
+  const s = await meet(92);
+  A.set("sit"); B.set("sit"); A.mod("lick", true); B.mod("lick", true);
+  for (let i = 0; i < 4; i++){ fx("♥", A.x + 100 * s, A.y + 4 * s); await wait(700); }
+  B.mod("lick", false); B.set("lie");
+  for (let i = 0; i < 6; i++){ i % 2 ? fx("♥", A.x + 100 * s, A.y + 4 * s) : fxc(B, "z", "z"); await wait(900); }
+  A.mod("lick", false); A.set(""); B.set("");
+}
+async function scrap(ch, ru, legs){               // chase round the screen, then a tumble
+  ch.chase = { t: ru, speed: 140 };
+  for (let k = 0; k < legs; k++){ const p = rnd(); await ru.go(p.x, p.y, 135); }
+  ru.stop();
+  const side = ch.x < ru.x ? -1 : 1;
+  await ch.go(ru.x + side * 40 * depth(ru.y), ru.y + 3, 140);
+  ch.stop(); ch.face(-side); ru.face(side);
+  ch.mod("tumble", true); ru.mod("tumble", true);
+  for (let i = 0; i < 6; i++){ fx(i % 2 ? "✸" : "!", ru.x + 30 * depth(ru.y), ru.y + 10, "sp"); await wait(380); }
+  ch.mod("tumble", false); ru.mod("tumble", false);
+  ch.set("sit"); ru.set("sit"); await wait(1500); ch.set(""); ru.set("");
+}
 async function fight(){
-  const s = await meet(135);                      // face to face, a paw apart
+  const s = await meet(135);                       // face to face, a paw apart
   for (let r = 0; r < 3; r++) for (const c of [A, B]){
     c.mod("swat", true); fx("✸", (A.x + B.x) / 2 + 55 * s, A.y + 20 * s, "sp"); await wait(850); c.mod("swat", false);
   }
-  A.chase = { t: B, speed: 140 };                 // B bolts, A gives chase
-  for (let k = 0; k < 3; k++){ const p = rnd(); await B.go(p.x, p.y, 135); }
-  B.stop(); await A.go(B.x - 40 * depth(B.y), B.y + 3, 140);
-  A.stop(); A.face(1); B.face(-1);
-  A.mod("tumble", true); B.mod("tumble", true);   // rolling around, wrestling
-  for (let i = 0; i < 6; i++){ fx(i % 2 ? "✸" : "!", B.x + 30 * depth(B.y), B.y + 10, "sp"); await wait(380); }
-  A.mod("tumble", false); B.mod("tumble", false);
-  A.set("sit"); B.set("sit"); await wait(1800); A.set(""); B.set("");
-  if (Math.random() < .75) await kiss();          // and then they make up
+  await (Math.random() < .5 ? scrap(A, B, 3) : scrap(B, A, 3));
+  if (Math.random() < .75) await kiss();           // and then they make up
+}
+async function ambush(){                           // A hides, B strolls past, A springs
+  const b = bounds(), y = b.y0 + rr(.3, .8) * (b.y1 - b.y0), right = Math.random() < .5;
+  const hx = innerWidth * rr(.35, .6), sx = right ? b.x0 : b.x1, ex = right ? b.x1 : b.x0;
+  await Promise.all([A.go(hx, y, 90), B.go(sx, y + 10, 90)]);
+  A.face(right ? 1 : -1); A.set("crouch");
+  B.go(ex, y + 10, 55);
+  for (let i = 0; i < 200 && Math.abs(B.x - A.x) > 200 * depth(y); i++) await wait(60);
+  await wait(300);
+  const b2 = bounds(); await A.jump(clamp(B.x + (right ? 20 : -20), b2.x0, b2.x1), B.y, 70, .5);
+  fxc(B, "!", "sp"); B.stop(); B.mod("hop", true); await wait(1100); B.mod("hop", false);
+  await scrap(B, A, 2);                            // B takes revenge
+}
+async function race(){                             // line up, ready, go; the loser flops down
+  const b = bounds(), y = clamp(b.y0 + rr(.2, .7) * (b.y1 - b.y0), b.y0, b.y1 - 30), right = Math.random() < .5;
+  const xs = right ? b.x0 : b.x1, xe = right ? b.x1 : b.x0, s = depth(y);
+  await Promise.all([A.go(xs, y, 95), B.go(xs, y + 24 * s, 95)]);
+  [A, B].forEach(c => { c.face(right ? 1 : -1); c.set("crouch"); });
+  await wait(1100); fx("!", innerWidth / 2, y, "sp");
+  const sa = rr(150, 200), sb = rr(150, 200), pa = A.go(xe, y, sa), pb = B.go(xe, y + 24 * s, sb);
+  await Promise.race([pa, pb]);
+  const win = sa > sb ? A : B, lose = win === A ? B : A;
+  win.mod("hop", true); fxc(win, "♥");
+  await Promise.all([pa, pb]);
+  lose.set("lie"); fxc(lose, "z", "z"); await wait(2000); lose.set("sit"); await wait(900); win.mod("hop", false); lose.set("");
+}
+async function leapfrog(){                         // A runs up and jumps clean over B
+  const b = bounds(), y = b.y0 + rr(.2, .8) * (b.y1 - b.y0), s = depth(y);
+  const x = clamp(innerWidth / 2 - 55 * s, b.x0 + 120, b.x1 - 20);
+  await Promise.all([B.go(x, y, 80), A.go(Math.max(8, x - 190 * s), y, 80)]);
+  A.face(1); B.set("crouch"); await wait(800);
+  await A.go(x - 70 * s, y, 150);
+  await A.jump(Math.min(x + 135 * s, innerWidth - 80), y, 120, .85);
+  A.face(-1); B.set(""); B.face(1);
+  A.mod("hop", true); B.mod("hop", true); fxc(A, "♥"); await wait(1300); A.mod("hop", false); B.mod("hop", false);
+}
+async function sync(){                             // side by side, doing exactly the same thing at the same time
+  const b = bounds(), gap = 120, xmax = Math.max(8, innerWidth - (gap + 110) * 1.2 - 8);
+  const x = 8 + Math.random() * (xmax - 8), y = b.y0 + Math.random() * (b.y1 - b.y0), s = depth(y);
+  await Promise.all([A.go(x, y, 85), B.go(x + gap * s, y + 6, 85)]);
+  A.face(1); B.face(1);
+  for (const k of ["groom", "stretch", "roll", "leap"].sort(() => Math.random() - .5).slice(0, 3)) await Promise.all([ACT[k](A), ACT[k](B)]);
+}
+async function hunt1(c){                           // watch the butterfly, crouch, spring, miss
+  for (let round = 0; round < 2; round++){
+    const b = bounds(), s = depth(c.y), side = bug.x > c.x ? -1 : 1;
+    await c.go(clamp(bug.x + side * 230 * s, b.x0, b.x1), clamp(bug.y - 50 * s, b.y0, b.y1), 70);
+    c.set("sit"); c.mod("look", true);
+    for (let i = 0; i < 8; i++){ c.face(bug.x > c.x + 55 ? 1 : -1); await wait(200); }
+    c.mod("look", false); c.set("crouch"); c.face(bug.x > c.x + 55 ? 1 : -1); await wait(900);
+    const b2 = bounds();
+    await c.jump(clamp(bug.x - (c.f > 0 ? 85 : 25) * s, b2.x0, b2.x1), clamp(bug.y - 50 * s, b2.y0, b2.y1), 65, .6);
+    bug.flee = 1.3; bug.ang = rr(0, 6.28); fxc(c, "?", "sp");
+    c.set("sit"); await wait(900); c.set("");
+  }
+}
+async function hunt(){                             // sometimes both hunt, sometimes only one does while the other washes or naps
+  bugStart();
+  const [h, o] = Math.random() < .5 ? [A, B] : [B, A], both = Math.random() < .5;
+  const jobs = [hunt1(h)];
+  if (both) jobs.push(wait(900).then(() => hunt1(o))); else jobs.push(ACT[pick(["groom", "nap", "look", "stretch"])](o));
+  await Promise.all(jobs); bugStop();
+}
+
+/* ----- tapping a cat: it stops and answers, sassy or flirty ----- */
+const MAD = [
+  "Bwiset ka! Busy ako, oy.", "Mukha ba akong laruan, te?", "Hoy, ano ba?! Nanahimik ako dito.",
+  `${HER}, ikaw ba 'yan? Bakit mo ako sinundot?!`, "Subukan mo ulit, kakalmutin kita.", "Huwag ang balahibo ko!",
+  "May ginagawa akong importante, istorbo ka.", "Ay grabe, walang respeto."
+];
+const ANGRY = ["TAMA NA! Nakakainis ka na!", "Mahal kita pero kakalmutin kita.", "Hinay-hinay lang, nahihilo na ako!", `${HER}!! Seryoso ba?!`, "Bwiset ka talaga!"];
+const LOVE = [
+  "Uy, hello po~ ♥", "Madalas ka ba dito? Kasi ako, oo.", "Pwede mo akong haplusin ulit, okay lang.", "Ingat ka, mabilis akong ma-in love.",
+  `Ikaw ang paborito kong tao, ${HER}.`, "Mainit ba rito o ako lang 'to?", "Meow... ang cute mo naman.", "Kakantahan kita ng purr, promise."
+];
+function say(c, text){
+  c.el.querySelectorAll(".bubble").forEach(x => x.remove());
+  const b = document.createElement("div");
+  b.className = "bubble"; b.textContent = text; b.style.setProperty("--inv", 1 / depth(c.y)); c.el.appendChild(b);
+  const r = b.getBoundingClientRect(), k = depth(c.y);
+  if (r.left < 6) b.style.setProperty("--sx", (6 - r.left) / k + "px");
+  else if (r.right > innerWidth - 6) b.style.setProperty("--sx", (innerWidth - 6 - r.right) / k + "px");
+  if (r.top < 4) b.classList.add("below");
+  c.talk = true; clearTimeout(c.bt);
+  c.bt = setTimeout(() => { b.remove(); c.talk = false; }, 3200);
+}
+function react(c){
+  const now = performance.now();
+  c.clicks = c.clicks.filter(t => now - t < 5000); c.clicks.push(now);
+  const n = c.clicks.length;
+  // the black cat is the sassy one, the white cat is the flirt; poke either one too much and it gets properly cross
+  const flirt = n < 4 && Math.random() < (c === A ? .35 : .65);
+  const m = flirt ? "flirt" : "mad";
+  say(c, flirt ? pick(LOVE) : n >= 4 ? pick(ANGRY) : pick(MAD));
+  c.hold = flirt ? 2.2 : n >= 4 ? 2.8 : 1.9;
+  ["mad", "flirt"].forEach(x => c.mod(x, false)); c.mod("still", true); c.mod(m, true);
+  if (flirt) [0, 350, 700].forEach(t => setTimeout(() => fxc(c, "♥"), t));
+  else { fxc(c, "!", "sp"); if (n >= 4) setTimeout(() => fxc(c, "✸", "sp"), 300); }
+  clearTimeout(c.rt);
+  c.rt = setTimeout(() => { c.mod(m, false); c.mod("still", false); }, c.hold * 1000);
 }
 
 function startCats(){
@@ -487,19 +715,31 @@ function startCats(){
   box.innerHTML = ["A", "B"].map(k => `<div class="cat cat${k}" data-k="cat${k}"><div class="hopper"><div class="flip">${CAT_SVG}</div></div></div>`).join("");
   [A, B] = [...box.children].map(e => new Cat(e));
   A.el.style.opacity = B.el.style.opacity = 1;
+  [A, B].forEach(c => c.el.addEventListener("click", () => react(c)));
+  setTimeout(() => { if (!A.clicks.length && !B.clicks.length) say(B, "Psst... pwede mo kaming i-tap."); }, 14000);
   if (reduced){                                    // reduced motion: two cats asleep together, nothing moves
     A.x = innerWidth / 2 - 115; B.x = A.x + 100; A.y = B.y = innerHeight - 120;
     A.face(1); B.face(-1); [A, B].forEach(c => { c.set("lie"); c.render(); }); return;
   }
   A.x = -160; A.y = rnd().y; B.x = innerWidth + 40; B.y = rnd().y;
   let last = 0;
-  (function tick(ts){ const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts; [A, B].forEach(c => { c.step(dt); c.render(); }); requestAnimationFrame(tick); })(0);
+  (function tick(ts){
+    const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts;
+    [A, B].forEach(c => { c.step(dt); c.render(); });
+    if (bug.on) bugStep(dt, ts);
+    requestAnimationFrame(tick);
+  })(0);
   (async () => {
-    await stroll(1); await kiss();
-    let prev = -1; const eps = [kiss, fight, cuddle];
+    await stroll(1); await soloPair();
+    const eps = { kiss, fight, cuddle, nuzzle, ambush, race, hunt, leapfrog, sync, solo: soloPair };
+    let prev = "";
     for (;;){
-      let i; do { i = Math.floor(Math.random() * 3); } while (i === prev); prev = i;
-      await eps[i](); await stroll(1 + Math.floor(Math.random() * 2));
+      const bag = Object.keys(eps).sort(() => Math.random() - .5);
+      if (bag[0] === prev) bag.push(bag.shift());
+      for (const k of bag){
+        prev = k; await eps[k]();
+        await (Math.random() < .5 ? stroll(1) : soloPair());   // a breather: walking together, or two different things at once
+      }
     }
   })();
 }
